@@ -19,7 +19,8 @@ class AuthController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
     ): Response {
         $data = json_decode($request->getContent(), true);
         $username = $data['username'] ?? '';
@@ -27,6 +28,10 @@ class AuthController extends AbstractController
 
         if (!$username || !$password) {
             return $this->json(['error' => 'Invalid data'], 400);
+        }
+
+        if ($userRepository->findOneBy(['username' => $username])) {
+            return $this->json(['error' => 'Username already exists'], 400);
         }
 
         $user = new User();

@@ -33,11 +33,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    /**
-     * @var Collection<int, Cart>
-     */
-    #[ORM\OneToMany(targetEntity: Cart::class, mappedBy: 'user')]
-    private Collection $carts;
 
     /**
      * @var Collection<int, Order>
@@ -45,9 +40,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'user')]
     private Collection $orders;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Cart $cart = null;
+
     public function __construct()
     {
-        $this->carts = new ArrayCollection();
         $this->orders = new ArrayCollection();
     }
 
@@ -126,35 +123,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    /**
-     * @return Collection<int, Cart>
-     */
-    public function getCarts(): Collection
-    {
-        return $this->carts;
-    }
-
-    public function addCart(Cart $cart): static
-    {
-        if (!$this->carts->contains($cart)) {
-            $this->carts->add($cart);
-            $cart->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCart(Cart $cart): static
-    {
-        if ($this->carts->removeElement($cart)) {
-            // set the owning side to null (unless already changed)
-            if ($cart->getUser() === $this) {
-                $cart->setUser(null);
-            }
-        }
-
-        return $this;
-    }
+    
 
     /**
      * @return Collection<int, Order>
@@ -182,6 +151,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCart(): ?Cart
+    {
+        return $this->cart;
+    }
+
+    public function setCart(?Cart $cart): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($cart === null && $this->cart !== null) {
+            $this->cart->setUser(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($cart !== null && $cart->getUser() !== $this) {
+            $cart->setUser($this);
+        }
+
+        $this->cart = $cart;
 
         return $this;
     }

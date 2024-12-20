@@ -35,11 +35,7 @@ class Product
     #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'product')]
     private Collection $images;
 
-    /**
-     * @var Collection<int, Cart>
-     */
-    #[ORM\OneToMany(targetEntity: Cart::class, mappedBy: 'product')]
-    private Collection $carts;
+
 
     /**
      * @var Collection<int, OrderDetail>
@@ -47,11 +43,26 @@ class Product
     #[ORM\OneToMany(targetEntity: OrderDetail::class, mappedBy: 'product')]
     private Collection $orderDetails;
 
+    
+
+    #[ORM\Column]
+    private ?int $stock = null;
+
+    /**
+     * @var Collection<int, CartProduct>
+     */
+    #[ORM\OneToMany(targetEntity: CartProduct::class, mappedBy: 'product')]
+    private Collection $product;
+
+
+
+   
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
-        $this->carts = new ArrayCollection();
         $this->orderDetails = new ArrayCollection();
+        $this->product = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -137,36 +148,7 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, Cart>
-     */
-    public function getCarts(): Collection
-    {
-        return $this->carts;
-    }
-
-    public function addCart(Cart $cart): static
-    {
-        if (!$this->carts->contains($cart)) {
-            $this->carts->add($cart);
-            $cart->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCart(Cart $cart): static
-    {
-        if ($this->carts->removeElement($cart)) {
-            // set the owning side to null (unless already changed)
-            if ($cart->getProduct() === $this) {
-                $cart->setProduct(null);
-            }
-        }
-
-        return $this;
-    }
-
+    
     /**
      * @return Collection<int, OrderDetail>
      */
@@ -196,4 +178,52 @@ class Product
 
         return $this;
     }
+
+    
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(int $stock): static
+    {
+        $this->stock = $stock;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CartProduct>
+     */
+    public function getProduct(): Collection
+    {
+        return $this->product;
+    }
+
+    public function addProduct(CartProduct $product): static
+    {
+        if (!$this->product->contains($product)) {
+            $this->product->add($product);
+            $product->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(CartProduct $product): static
+    {
+        if ($this->product->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getProduct() === $this) {
+                $product->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    
+
+    
 }
